@@ -1,0 +1,5 @@
+/* Tailwind v4 entry point — replaces the old three-directive block.
+   Content paths are auto-detected from the filesystem in v4.
+   No tailwind.config.ts needed for basic setup.
+   Add @theme or @plugin blocks here if customisation is required later. */
+@import "tailwindcss";

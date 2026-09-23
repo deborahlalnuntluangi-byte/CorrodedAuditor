@@ -1,0 +1,16 @@
+allowBuilds:
+  esbuild: set this to true or false
+  unrs-resolver: set this to true or false
+# pnpm-workspace.yaml
+# pnpm v12+ moved project settings from package.json['pnpm'] to this file.
+# onlyBuiltDependencies: native binary packages that are allowed to run
+# postinstall build scripts. Each entry is explicitly justified:
+#   esbuild     — required by drizzle-kit and vitest for transpilation
+#   unrs-resolver — Rolldown resolver used by vitest 5
+#   @rolldown/binding-win32-x64-msvc — Rolldown native binding for Windows x64
+#   sharp       — Next.js image optimisation (may be needed at build time)
+onlyBuiltDependencies:
+  - esbuild
+  - unrs-resolver
+  - "@rolldown/binding-win32-x64-msvc"
+  - sharp
