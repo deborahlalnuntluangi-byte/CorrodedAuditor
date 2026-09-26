@@ -29,8 +29,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# ── YOLOv8 Medium ──────────────────────────────────────────────────────────────
-_MODEL_NAME = "yolov8m.pt"
+# ── Litter-Specific YOLOv8 Model ───────────────────────────────────────────────
+_CUSTOM_MODEL_PATH = Path(__file__).parent.parent / "litter_yolov8.pt"
+_MODEL_NAME = str(_CUSTOM_MODEL_PATH) if _CUSTOM_MODEL_PATH.exists() else "yolov8n.pt"
 _model_cache = None
 
 
@@ -42,9 +43,9 @@ def _get_model() -> YOLO:
 
 
 def _severity_from_count(count: int) -> str:
-    if count >= 7:
+    if count >= 3:
         return "high"
-    elif count >= 3:
+    elif count >= 1:
         return "medium"
     return "low"
 
@@ -64,11 +65,14 @@ def run(image_path: str) -> dict:
     if not path.exists():
         raise FileNotFoundError(f"Image not found: {image_path}")
 
-    # ── Stage 1: YOLOv8 ──────────────────────────────────────────────────────
+    # ── Stage 1: Dedicated Litter YOLOv8 ─────────────────────────────────────
     model = _get_model()
-    # Lower confidence to catch occluded garbage, but high enough to avoid clean street hallucinations
-    results = model(str(path), imgsz=1280, conf=0.15, verbose=False)
+    # conf=0.20 + iou=0.45 + spatial ground filter eliminates false building/rack boxes
+    results = model(str(path), imgsz=1280, conf=0.20, iou=0.45, verbose=False)
     result = results[0]
+
+    img_w, img_h = result.orig_shape[1], result.orig_shape[0]
+    total_image_area = img_w * img_h
 
     boxes = []
     if result.boxes is not None:
@@ -85,6 +89,15 @@ def run(image_path: str) -> dict:
             label = model.names[cls_id]
 
             if label in excluded_classes:
+                continue
+
+            # Filter 1: Ignore boxes starting in top 25% of image (sky, roofs, upper building walls)
+            if y1 < 0.25 * img_h:
+                continue
+
+            # Filter 2: Ignore giant full-scene background boxes (area > 40% of image)
+            box_area = (x2 - x1) * (y2 - y1)
+            if box_area > 0.4 * total_image_area:
                 continue
 
             # Remap all valid detections to generic "Litter Item"

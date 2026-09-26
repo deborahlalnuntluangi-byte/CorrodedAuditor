@@ -859,7 +859,8 @@ if run_clicked or "pipeline_state" in st.session_state:
     with c1:
         render_agent_card("💨", "Air Quality Agent",   air_result,    " AQI")
     with c2:
-        render_agent_card("🌊", "Water Quality Agent", water_result,  " NTU")
+        # Clarify regional sensor telemetry to avoid photo analysis confusion
+        render_agent_card("🌊", "Regional Water Telemetry", water_result,  " NTU")
     with c3:
         render_agent_card("🗑️", "Litter Detection",    litter_result, " objects")
 
@@ -905,7 +906,8 @@ if run_clicked or "pipeline_state" in st.session_state:
 
     # Water Quality Breakdown Expander
     st.markdown('<div style="margin-top: 1rem;"></div>', unsafe_allow_html=True)
-    with st.expander("💧 Water Quality Details", expanded=False):
+    with st.expander("💧 Regional Water Station Telemetry (mock_zones.csv)", expanded=False):
+        st.caption("ℹ️ *Water quality data (pH, Turbidity, Coliform) is fetched from regional monitoring station sensors in this zone, independent of uploaded field photos.*")
         w1, w2, w3, w4 = st.columns(4)
         with w1: st.metric("pH", water_result.get("ph", "N/A"))
         with w2: st.metric("Turbidity (NTU)", water_result.get("turbidity_ntu", "N/A"))
