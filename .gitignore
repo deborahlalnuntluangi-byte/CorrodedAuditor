@@ -1,4 +1,8 @@
 .env
+.env.local
+node_modules/
+.neon
 __pycache__/
 *.pyc
 yolov8n.pt
+yolov8m.pt
